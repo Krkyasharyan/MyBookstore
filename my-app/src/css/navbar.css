@@ -1,0 +1,28 @@
+.ant-menu {
+    display: flex;
+    justify-content: space-between;
+    font-size: 16px;
+  }
+  
+  .ant-menu-horizontal {
+    border-bottom: none;
+  }
+  
+  .ant-menu-item {
+    margin: 0;
+    padding: 0 20px;
+  }
+  
+  .ant-menu-item a {
+    display: flex;
+    align-items: center;
+    color: #fff;
+  }
+  
+  .ant-menu-item a:hover {
+    color: #1890ff;
+  }
+  
+  .ant-avatar {
+    margin-right: 10px;
+  }

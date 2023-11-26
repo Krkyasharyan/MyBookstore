@@ -1,0 +1,9 @@
+{
+  "bookId": "2",
+  "name": "The Dark Tower",
+  "type": "Fantasy",
+  "price": "100",
+  "author": "Stephen King",
+  "description": "The Dark Tower is a fantasy novel by American writer Stephen King...",
+  "image": "https://upload.wikimedia.org/wikipedia/en/5/54/Thedarktower7.jpg"
+}

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <!-- Define a file appender -->
+        <File name="File" fileName="/var/log/redis.log">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </File>
+
+        <!-- Define a console appender (optional) -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="File"/> <!-- Use the file appender for logging -->
+            <!-- If you want to also log to the console, add this line: -->
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
