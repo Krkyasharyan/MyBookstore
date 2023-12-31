@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Form, Input, InputNumber, Button, message } from 'antd';
+import API_BASE_URL from '../config';
 
 function UpdateBookView() {
     const [form] = Form.useForm();
@@ -14,14 +15,18 @@ function UpdateBookView() {
     }, [id]);
 
     const fetchBook = async () => {
-        const response = await fetch(`http://localhost:8080/api/books/${id}`);
+        console.log('Fetching book...');
+        console.log(id);
+        const response = await fetch(`${API_BASE_URL}/api/books/${id}`);
         const data = await response.json();
         setBook(data);
         form.setFieldsValue(data);
     }
 
     const onFinish = async (values) => {
-        const response = await fetch(`http://localhost:8080/api/books/${id}`, {
+        // Add fetched book's ID to the values object
+        values.id = book.id;
+        const response = await fetch(`${API_BASE_URL}/api/books/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'

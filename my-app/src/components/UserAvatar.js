@@ -5,6 +5,7 @@ import userPng from '../assets/profilePicture.jpg';
 import { useUser } from '../UserContext';  // Import the custom hook
 import { message } from 'antd';  // Import the message component
 import { useWebSocket } from '../WebSocketContext';
+import API_BASE_URL from '../config';
 
 export function UserAvatar({ user }) {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export function UserAvatar({ user }) {
 
   function logOut() {
   
-    fetch ('http://localhost:8080/api/auth/logout', {
+    fetch (`${API_BASE_URL}/api/auth/logout`, {
       method: 'POST',
       credentials: 'include',  // Don't forget to include credentials
     })

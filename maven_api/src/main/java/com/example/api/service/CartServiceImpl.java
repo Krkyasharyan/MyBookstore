@@ -7,6 +7,7 @@ import com.example.api.model.Book;
 import com.example.api.repository.CartRepository;
 import com.example.api.repository.UsersRepository;
 import com.example.api.repository.BooksRepository;
+import com.example.api.service.BooksService;
 
 import lombok.AllArgsConstructor;
 
@@ -28,26 +29,25 @@ public class CartServiceImpl implements CartService{
     private CartRepository cartRepository;
     private UsersRepository usersRepository;
     private BooksRepository booksRepository;
+    private BooksService booksService;
 
     private static final Logger logger = LoggerFactory.getLogger(CartServiceImpl.class);
 
 
     @Override
-public Cart createCart(int userId, int bookId, int quantity) {
+public Cart createCart(int userId, String bookId, int quantity) {
     Long userIdLong = Long.valueOf(userId);
-    Long bookIdLong = Long.valueOf(bookId);
     Optional<User> userOptional = usersRepository.findById(userIdLong);
-    Optional<Book> bookOptional = booksRepository.findById(bookIdLong);
+    Book book = booksService.getBookById(bookId);
     
-    if(userOptional.isPresent() && bookOptional.isPresent()) {
+    if(userOptional.isPresent() && book != null) {
         User user = userOptional.get();
-        Book book = bookOptional.get();
 
         Cart cart;
         Optional<Cart> cartOptional = Optional.ofNullable(cartRepository.findByUser_Id(userIdLong));
         if(cartOptional.isPresent()) {
             // if a cart already exists for this user
-            cart = addCartItem(userIdLong, bookIdLong, quantity);
+            cart = addCartItem(userIdLong, bookId, quantity);
         } else {
             // if a cart does not exist for this user
             CartItem cartItem = new CartItem();
@@ -91,7 +91,7 @@ public Cart createCart(int userId, int bookId, int quantity) {
     }
 
     @Override
-    public void deleteCartItem(long bookId, long userId) {
+    public void deleteCartItem(String bookId, long userId) {
         Cart cart = cartRepository.findByUser_Id(userId);
         User user = usersRepository.findById(userId).get();
 
@@ -106,7 +106,7 @@ public Cart createCart(int userId, int bookId, int quantity) {
         boolean found = false;
         while (iterator.hasNext()) {
             CartItem cartItem = iterator.next();
-            if(cartItem.getBook().getId() == bookId){
+            if(cartItem.getBook().getId() == Long.valueOf(bookId)){
                 iterator.remove();
                 found = true;
             }
@@ -125,13 +125,13 @@ public Cart createCart(int userId, int bookId, int quantity) {
     
 
     @Override
-    public Cart addCartItem(Long userId, Long bookId, int quantity) {
+    public Cart addCartItem(Long userId, String bookId, int quantity) {
         Cart cart = cartRepository.findByUser_Id(userId).getUser().getCart();
-        Book book = booksRepository.findById(bookId).get();
+        Book book = booksService.getBookById(bookId);
         User user = usersRepository.findById(userId).get();
         AtomicBoolean found = new AtomicBoolean(false);
         cart.getCartItems().forEach(cartItem -> {
-            if(cartItem.getBook().getId() == bookId){
+            if(cartItem.getBook().getId() == Long.valueOf(bookId)){
                 cartItem.setQuantity(cartItem.getQuantity() + quantity);
                 found.set(true);;
             }

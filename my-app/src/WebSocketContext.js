@@ -22,7 +22,7 @@ export const WebSocketProvider = ({ children }) => {
       ws.close();
     }
   
-    const newWs = new WebSocket(`ws://localhost:8080/transfer/${userId}`);
+    const newWs = new WebSocket(`ws://localhost/transfer/${userId}`);
   
     newWs.onopen = () => {
       console.log('WebSocket connection opened');

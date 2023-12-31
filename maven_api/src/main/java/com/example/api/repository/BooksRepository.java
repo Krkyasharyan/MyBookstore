@@ -1,9 +1,13 @@
 package com.example.api.repository;
 
-import com.example.api.model.Book;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.api.model.MBook;
 
+import java.util.List;
+import java.util.Set;
 
-public interface BooksRepository extends JpaRepository<Book, Long> {
-    
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface BooksRepository extends MongoRepository<MBook, String> {
+    List<MBook> findByTagsIn(Set<String> tags);
+    List<MBook> findByTitleContainingIgnoreCase(String title);
 }

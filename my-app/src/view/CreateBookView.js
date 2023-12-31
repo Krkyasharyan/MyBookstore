@@ -1,11 +1,12 @@
 import React from 'react';
 import { Form, Input, InputNumber, Button, message } from 'antd';
+import API_BASE_URL from '../config';
 
 function CreateBookView() {
   const onFinish = async (values) => {
     try {
       console.log(values);
-      const response = await fetch('http://localhost:8080/api/books', {
+      const response = await fetch(`${API_BASE_URL}/api/books`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

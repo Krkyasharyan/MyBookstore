@@ -3,12 +3,13 @@ import { Menu, Layout } from 'antd';
 import { BookOutlined, UserOutlined, UnorderedListOutlined, ShoppingCartOutlined, ContainerOutlined, TeamOutlined, BarChartOutlined } from '@ant-design/icons';
 import { Outlet, Link, useLocation } from "react-router-dom";
 import '../css/index.css';
+import API_BASE_URL from '../config';
 
 const { Sider } = Layout;
 
 async function getIsAdmin() {
   try {
-    const response = await fetch('http://localhost:8080/api/auth/getUserInfo', { credentials: 'include' });
+    const response = await fetch(`${API_BASE_URL}/api/auth/getUserInfo`, { credentials: 'include' });
     const data = await response.json();
     return data.isAdmin;
   } catch (error) {

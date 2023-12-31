@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, Button, Layout, Typography, Col, message } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined, HomeOutlined, PhoneOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import API_BASE_URL from '../config';
 
 const { Title } = Typography;
 
@@ -10,7 +11,7 @@ function RegistrationView() {
   const navigate = useNavigate();
 
   async function checkUsername(username) {
-    const response = await fetch(`http://localhost:8080/api/users/checkUsername`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/checkUsername`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username }),
@@ -23,7 +24,7 @@ function RegistrationView() {
   }
 
   async function checkEmail(email) {
-    const response = await fetch(`http://localhost:8080/api/users/checkEmail`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/checkEmail`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -62,7 +63,7 @@ function RegistrationView() {
         isDisabled: false,
       }
 
-      const response = await fetch('http://localhost:8080/api/users/register', {
+      const response = await fetch(`${API_BASE_URL}/api/users/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

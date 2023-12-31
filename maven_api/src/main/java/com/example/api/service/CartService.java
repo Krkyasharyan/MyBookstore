@@ -4,7 +4,7 @@ import com.example.api.model.Cart;
 
 
 public interface CartService {
-    Cart createCart(int userId, int bookId, int quantity);
+    Cart createCart(int userId, String bookId, int quantity);
 
     Cart getCartByUserId(Long userId);
 
@@ -12,7 +12,7 @@ public interface CartService {
 
     void deleteCart(long userId);
 
-    void deleteCartItem(long bookId, long userId);
+    void deleteCartItem(String bookId, long userId);
 
-    Cart addCartItem(Long userId, Long bookId, int quantity);
+    Cart addCartItem(Long userId, String bookId, int quantity);
 }

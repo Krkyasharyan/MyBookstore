@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Table, Button, Space } from 'antd';
+import API_BASE_URL from '../config';
 
 function UserListView() {
   const [users, setUsers] = useState([]);
@@ -9,20 +10,20 @@ function UserListView() {
   }, []);
 
   const fetchUsers = async () => {
-    const response = await fetch('http://localhost:8080/api/users');
+    const response = await fetch(`${API_BASE_URL}/api/users`);
     const data = await response.json();
     setUsers(data);
   }
 
   const disableUser = async (userId) => {
     const requestOptions = { method: 'PUT' };
-    await fetch(`http://localhost:8080/api/users/disableUser/${userId}`, requestOptions);
+    await fetch(`${API_BASE_URL}/api/users/disableUser/${userId}`, requestOptions);
     fetchUsers(); // Refetch users after disabling a user
   }
 
   const enableUser = async (userId) => {
     const requestOptions = { method: 'PUT' };
-    await fetch(`http://localhost:8080/api/users/enableUser/${userId}`, requestOptions);
+    await fetch(`${API_BASE_URL}/api/users/enableUser/${userId}`, requestOptions);
     fetchUsers(); // Refetch users after enabling a user
   }
 

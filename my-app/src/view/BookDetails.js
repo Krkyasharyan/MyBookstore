@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Card, Button, Layout, message } from 'antd';
 import { Row, Col } from 'antd';
 import '../css/BookDetails.css';
+import API_BASE_URL from '../config';
 
 //const { Header, Content, Footer } = Layout;
 
@@ -19,8 +20,9 @@ function BookDetails() {
     };
 
     const handleAddToCart = async () => {
-      const userId = await fetch ('http://localhost:8080/api/auth/getUserInfo', {credentials: 'include'}).then(response => response.json()).then(data => data.userId);
+      const userId = await fetch (`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include'}).then(response => response.json()).then(data => data.userId);
       const bookId = new URLSearchParams(location.search).get("id");
+      console.log(bookId);
       if(userId == null){
         message.error('Please login first.');
         return;
@@ -31,9 +33,9 @@ function BookDetails() {
         headers: { 'Content-Type': 'application/json' }
       };
     
-      await fetch(`http://localhost:8080/api/cart?userId=${userId}&bookId=${bookId}&quantity=${desired_quantity}`, requestOptions);
+      await fetch(`${API_BASE_URL}/api/cart?userId=${userId}&bookId=${bookId}&quantity=${desired_quantity}`, requestOptions);
       requestOptions = {method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({quantity: quantity - desired_quantity})};
-      await fetch(`http://localhost:8080/api/books/${bookId}`, requestOptions);
+      await fetch(`${API_BASE_URL}/api/books/${bookId}`, requestOptions);
       navigate('/shoppingCart');
     };
     
@@ -45,7 +47,7 @@ function BookDetails() {
       const fetchBook = async () => {
 
         const bookId = new URLSearchParams(location.search).get("id");
-        const response = await fetch(`http://localhost:8080/api/books/${bookId}`);
+        const response = await fetch(`${API_BASE_URL}/api/books/${bookId}`);
         const data = await response.json();
         setBook(data);
 

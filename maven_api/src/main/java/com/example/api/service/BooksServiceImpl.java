@@ -6,13 +6,20 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.example.api.model.Book;
+import com.example.api.model.MBook;
 import com.example.api.repository.BooksRepository;
 
+import java.io.Console;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
+import javax.swing.text.html.HTML.Tag;
+
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.LogManager;
 import lombok.AllArgsConstructor;
+import com.example.api.service.TagService;
 
 @Service
 @AllArgsConstructor
@@ -20,6 +27,9 @@ public class BooksServiceImpl implements BooksService {
 
     @Autowired
     private BooksRepository booksRepository;
+
+    @Autowired
+    private TagService tagService;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -38,15 +48,35 @@ public class BooksServiceImpl implements BooksService {
         }
     }
     
+    @Override
+    public List<MBook> searchBooksByTag(String tagName) {
+        Set<String> relatedTags = tagService.findAllRelatedTags(tagName);
+        return booksRepository.findByTagsIn(relatedTags);
+    }
+
+    @Override
+    public List<MBook> searchBooksByTitle(String title) {
+        return booksRepository.findByTitleContainingIgnoreCase(title);
+    }
 
     @Override
     public Book createBook(Book book) {
         logger.info("Writing to database for id: " + (book.getId() != null ? book.getId() : "null"));
-        Book newBook = booksRepository.save(book);
+
+        // Get the id of the last book in the database
+        List<MBook> mBooks = booksRepository.findAll();
+        long lastId = 0;
+        if (!mBooks.isEmpty()) {
+            lastId = mBooks.get(mBooks.size() - 1).getSqlId();
+        }
+        book.setId(lastId + 1);
+        MBook mBook = convertBookToMBook(book);
+        MBook newMBook = booksRepository.save(mBook);
+        Book newBook = convertMBookToBook(newMBook);
 
         if (isCacheAvailable()) {
-            logger.info("Cache put for createBook for id: " + newBook.getId());
-            redisTemplate.opsForValue().set("book:" + newBook.getId(), newBook);
+            logger.info("Cache put for createBook for id: " + newMBook.getId());
+            redisTemplate.opsForValue().set("book:" + newMBook.getId(), newMBook);
 
             // Invalidate the old set of books
             redisTemplate.delete("allBooks"); 
@@ -55,7 +85,7 @@ public class BooksServiceImpl implements BooksService {
     }
 
     @Override
-    public Book getBookById(long id) {
+    public Book getBookById(String id) {
         long startTime = 0, endTime = 0;
         Book book = null;
         
@@ -71,17 +101,21 @@ public class BooksServiceImpl implements BooksService {
         }
 
         startTime = System.nanoTime();
-        Optional<Book> optionalBook = booksRepository.findById(id);
+        Optional<MBook> optionalMBook = booksRepository.findById(id);
+        System.out.println("optionalBook: " + optionalMBook);
 
-        if (optionalBook.isPresent()) {
-            book = optionalBook.get();
-            endTime = System.nanoTime();
-            logger.info("Cache miss for getBookById for id: " + id + ". Time taken: " + ((endTime - startTime) / 1000000)+ " ms");
-            if (isCacheAvailable()) {
-                redisTemplate.opsForValue().set("book:" + id, book);
-                logger.info("Cache put for getBookById for id: " + id);
-            }
+        if(optionalMBook.isPresent()) {
+            book = convertMBookToBook(optionalMBook.get());
         }
+        System.out.println("book: " + book);
+
+        endTime = System.nanoTime();
+        logger.info("Cache miss for getBookById for id: " + id + ". Time taken: " + ((endTime - startTime) / 1000000)+ " ms");
+        if (isCacheAvailable()) {
+            redisTemplate.opsForValue().set("book:" + id, convertBookToMBook(book));
+            logger.info("Cache put for getBookById for id: " + id);
+        }
+
         return book;
     }
 
@@ -105,11 +139,13 @@ public class BooksServiceImpl implements BooksService {
         }
 
         startTime = System.nanoTime();
-        books = booksRepository.findAll();
+        List<MBook> MBooks = booksRepository.findAll();
+        books = convertMBooksToBooks(MBooks);
+
         endTime = System.nanoTime();
 
         if (isCacheAvailable()) {
-            redisTemplate.opsForValue().set("allBooks", books);
+            redisTemplate.opsForValue().set("allBooks", MBooks);
             logger.info("Cache miss for GetAllBooks, time taken: " + ((endTime - startTime) / 1000000) + " ms");
             logger.info("Cache put for GetAllBooks");
         }
@@ -120,25 +156,27 @@ public class BooksServiceImpl implements BooksService {
 
     @Override
     public Book updateBook(Book book) {
-        logger.info("Cache evict for updateBook for id: " + book.getId());
-        Book existingBook = booksRepository.findById(book.getId()).orElse(null);
+        logger.info("Cache evict for updateBook for id: " + book.getMongoId());
+        MBook existingMBook = booksRepository.findById(book.getMongoId()).orElse(null);
 
-        if (existingBook != null) {
+        if (existingMBook != null) {
             // Update fields
-            existingBook.setAuthor(null != book.getAuthor() ? book.getAuthor() : existingBook.getAuthor());
-            existingBook.setDescription(null != book.getDescription() ? book.getDescription() : existingBook.getDescription());
-            existingBook.setId(0 != book.getId() ? book.getId() : existingBook.getId());
-            existingBook.setImage_url(null != book.getImage_url() ? book.getImage_url() : existingBook.getImage_url());
-            existingBook.setPrice(0 != book.getPrice() ? book.getPrice() : existingBook.getPrice());
-            existingBook.setTitle(null != book.getTitle() ? book.getTitle() : existingBook.getTitle());
-            existingBook.setType(null != book.getType() ? book.getType() : existingBook.getType());
-            existingBook.setQuantity(null != book.getQuantity() ? book.getQuantity() : existingBook.getQuantity());
+            existingMBook.setAuthor(null != book.getAuthor() ? book.getAuthor() : existingMBook.getAuthor());
+            existingMBook.setDescription(null != book.getDescription() ? book.getDescription() : existingMBook.getDescription());
+            existingMBook.setId(null != book.getMongoId() ? book.getMongoId() : existingMBook.getId());
+            existingMBook.setSqlId(0 != book.getId() ? book.getId() : existingMBook.getSqlId());
+            existingMBook.setImage_url(null != book.getImage_url() ? book.getImage_url() : existingMBook.getImage_url());
+            existingMBook.setPrice(0 != book.getPrice() ? book.getPrice() : existingMBook.getPrice());
+            existingMBook.setTitle(null != book.getTitle() ? book.getTitle() : existingMBook.getTitle());
+            existingMBook.setType(null != book.getType() ? book.getType() : existingMBook.getType());
+            existingMBook.setQuantity(null != book.getQuantity() ? book.getQuantity() : existingMBook.getQuantity());
 
             // Update in database
-            Book updatedBook = booksRepository.save(existingBook);
+            MBook updatedMBook = booksRepository.save(existingMBook);
+            Book updatedBook = convertMBookToBook(updatedMBook);
 
             if (isCacheAvailable()) {
-                redisTemplate.opsForValue().set("book:" + updatedBook.getId(), updatedBook);
+                redisTemplate.opsForValue().set("book:" + updatedMBook.getId(), updatedMBook);
                 redisTemplate.delete("allBooks");
             }
             
@@ -149,7 +187,7 @@ public class BooksServiceImpl implements BooksService {
     }
 
     @Override
-    public void deleteBook(long id) {
+    public void deleteBook(String id) {
         booksRepository.deleteById(id);
 
         if (isCacheAvailable()) {
@@ -160,5 +198,51 @@ public class BooksServiceImpl implements BooksService {
         }
         
         logger.info("Cache evict for deleteBook for id: " + id);
+    }
+    
+
+    // Helper function to convert MBook to Book
+    private Book convertMBookToBook(MBook mBook) {
+        if(mBook == null) {
+            return null;
+        }
+        Book book = new Book();
+        book.setAuthor(mBook.getAuthor());
+        book.setDescription(mBook.getDescription());
+        book.setId(mBook.getSqlId());
+        book.setMongoId(mBook.getId());
+        book.setImage_url(mBook.getImage_url());
+        book.setPrice(mBook.getPrice());
+        book.setTitle(mBook.getTitle());
+        book.setType(mBook.getType());
+        book.setQuantity(mBook.getQuantity());
+        return book;
+    }
+
+    // Convert Book to MBook
+    private MBook convertBookToMBook(Book book) {
+        if(book == null) {
+            return null;
+        }
+        MBook mBook = new MBook();
+        mBook.setAuthor(book.getAuthor());
+        mBook.setDescription(book.getDescription());
+        mBook.setSqlId(book.getId());
+        mBook.setId(book.getMongoId());
+        mBook.setImage_url(book.getImage_url());
+        mBook.setPrice(book.getPrice());
+        mBook.setTitle(book.getTitle());
+        mBook.setType(book.getType());
+        mBook.setQuantity(book.getQuantity());
+        return mBook;
+    }
+
+    // Convert a list of MBooks to a list of Books
+    private List<Book> convertMBooksToBooks(List<MBook> mBooks) {
+        List<Book> books = new java.util.ArrayList<>();
+        for (MBook mBook : mBooks) {
+            books.add(convertMBookToBook(mBook));
+        }
+        return books;
     }
 }

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Layout, Table, Button, message } from 'antd';
 import { useWebSocket } from '../WebSocketContext';
+import API_BASE_URL from '../config';
 
 
 const { Header, Content, Footer } = Layout;
@@ -51,7 +52,7 @@ function ShoppingCart() {
     }));
   
     try {
-      const response = await fetch('http://localhost:8080/api/services/getPrice', {
+      const response = await fetch(`${API_BASE_URL}/api/services/getPrice`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -71,7 +72,7 @@ function ShoppingCart() {
 
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/auth/getUserInfo', {credentials: 'include'})
+    fetch(`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include'})
       .then(response => response.json())
       .then(data => setUserId(data.userId))
       .catch(error => console.log(error));
@@ -92,7 +93,7 @@ function ShoppingCart() {
   useEffect(() => {
     if (!userId) return;
   
-    fetch(`http://localhost:8080/api/cart/user/${userId}`)
+    fetch(`${API_BASE_URL}/api/cart/user/${userId}`)
       .then(response => response.json())
       .then(data => {
         const booksData = data.cartItems.map(cartItem => ({
@@ -115,7 +116,7 @@ function ShoppingCart() {
 
   const handlePayment = async () => {
     // handle payment here and then navigate to myOrders
-    await fetch(`http://localhost:8080/api/orders/user/${userId}`, {
+    await fetch(`${API_BASE_URL}/api/orders/user/${userId}`, {
       method: 'POST',
     });
 
@@ -125,7 +126,7 @@ function ShoppingCart() {
   const handleRemove = async (id, record) => {
     const bookId = id;
     try {
-      await fetch(`http://localhost:8080/api/cart/${bookId}/${userId}`, {
+      await fetch(`${API_BASE_URL}/api/cart/${bookId}/${userId}`, {
         method: 'DELETE',
       });
       const updatedBooks = books.filter(book => book.id !== id);

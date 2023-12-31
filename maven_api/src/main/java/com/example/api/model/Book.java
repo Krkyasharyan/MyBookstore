@@ -20,6 +20,9 @@ public class Book{
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
+    @Column(name = "mongo_id")
+    private String mongoId;
+
     @Column(name = "title")
 	private String title;
 

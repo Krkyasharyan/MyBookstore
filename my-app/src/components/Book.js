@@ -12,16 +12,22 @@ export class Book extends React.Component{
 
         const {info} = this.props;
 
+        const image_url = info.image_url;
+        const imageUrl = info.imageUrl;
+
+        const finalImageUrl = imageUrl ? imageUrl : image_url;
+
+
         return (
             <Link to={{
                 pathname: '/bookDetails',
-                search: '?id=' + info.id}}
+                search: '?id=' + info.mongoId}}
                 target="_self"
             >
             <Card
                 hoverable
                 style={{width: 181}}
-                cover={<img alt="image" src={info.image_url} className={"bookImg"}/>}
+                cover={<img alt="image" src={finalImageUrl} className={"bookImg"}/>}
             >
                 <Meta title={info.title} description={'¥' + info.price}/>
             </Card>

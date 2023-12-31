@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate} from "react-router-dom";
 import { Form, Input, Button, Layout, Typography, Descriptions } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import API_BASE_URL from '../config';
 
 const { Title } = Typography;
 const { Content } = Layout;
@@ -14,7 +15,7 @@ function ProfileView() {
   // Fetch user data when component is loaded
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(`http://localhost:8080/api/auth/getUserInfo`, {credentials: 'include',});
+      const response = await fetch(`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include',});
       const data = await response.json();
       const userId = data.userId;
       if (!userId) {
@@ -33,7 +34,7 @@ function ProfileView() {
     setLoading(true);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/users/id/${userId}`);
+      const response = await fetch(`${API_BASE_URL}/api/users/id/${userId}`);
       const data = await response.json();
 
       if (response.ok) {
@@ -52,7 +53,7 @@ function ProfileView() {
     setLoading(true);
 
     try {
-      const response = await fetch(`/api/users/${user.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${user.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

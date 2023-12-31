@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Layout, Table, Tabs, Input, DatePicker, Button } from 'antd';
 import moment from 'moment';
 import '../css/home.css';
+import API_BASE_URL from '../config';
+
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -26,7 +28,7 @@ const columns = [
   },
 ];
 
-const userId = fetch ('http://localhost:8080/api/auth/getUserInfo', {credentials: 'include'}).then(response => response.json()).then(data => data.userId);
+const userId = fetch (`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include'}).then(response => response.json()).then(data => data.userId);
 
 function OrderView() {
   const [userId, setUserId] = useState(null);
@@ -38,7 +40,7 @@ function OrderView() {
 
   // Fetch userId
   useEffect(() => {
-    fetch('http://localhost:8080/api/auth/getUserInfo', {credentials: 'include'})
+    fetch(`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include'})
       .then(response => response.json())
       .then(data => setUserId(data.userId))
       .catch(error => console.log(error));
@@ -49,7 +51,7 @@ function OrderView() {
 
     if(!userId) return;
 
-    fetch(`http://localhost:8080/api/orders/user/${userId}`)
+    fetch(`${API_BASE_URL}/api/orders/user/${userId}`)
       .then(response => response.json())
       .then(data => {
         const orderTabs = data.map(order => {

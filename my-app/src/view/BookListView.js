@@ -1,13 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Table, Space, Button, Image, message, Input } from 'antd';
 import { EditOutlined, DeleteOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import CreateBookView from './CreateBookView';
+import API_BASE_URL from '../config';
 
 function BookListView() {
+  const navigate = useNavigate();
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCreateBook, setShowCreateBook] = useState(false);
+  const [tagSearchTerm, setTagSearchTerm] = useState('');
+
 
   useEffect(() => {
     fetchBooks();
@@ -15,7 +20,7 @@ function BookListView() {
 
   const fetchBooks = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/books');
+      const response = await fetch(`${API_BASE_URL}/api/books`);
       if (response.ok) {
         const data = await response.json();
         setBooks(data);
@@ -29,7 +34,7 @@ function BookListView() {
 
   const handleDelete = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/books/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/books/${id}`, {
         method: 'DELETE',
       });
 
@@ -44,8 +49,28 @@ function BookListView() {
     }
   };
 
-  const handleSearch = (event) => {
+  const handleUpdate = async (mongoId) => {
+    navigate(`/updateBook?id=${mongoId}`);
+  };
+
+  const handleSearch = async (event) => {
+    console.log(event.target.value);
     setSearchTerm(event.target.value);
+    if (event.target.value) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/books/searchByTag?tag=${event.target.value}`);
+        if (response.ok) {
+          const data = await response.json();
+          setBooks(data);
+        } else {
+          console.error('Error fetching books:', response.status);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    } else {
+      fetchBooks(); // Fetch all books if the search term is cleared
+    }
   };
 
   const columns = [
@@ -87,11 +112,11 @@ function BookListView() {
             }}
             target="_self"
           >
-            <Button icon={<EditOutlined />} type="primary">
+            <Button icon={<EditOutlined />} type="primary" onClick={() => handleUpdate(record.mongoId)}>
               Update
             </Button>
           </Link>
-          <Button icon={<DeleteOutlined />} type="danger" onClick={() => handleDelete(record.id)}>
+          <Button icon={<DeleteOutlined />} type="danger" onClick={() => handleDelete(record.mongoId)}>
             Delete
           </Button>
         </Space>
@@ -99,11 +124,17 @@ function BookListView() {
     },
   ];
 
-  const filteredBooks = books.filter((book) => book.title.toLowerCase().includes(searchTerm.toLowerCase()));
+  // const filteredBooks = books.filter((book) => book.title.toLowerCase().includes(searchTerm.toLowerCase()));
 
   return (
     <div>
-      <Input placeholder="Search Books" onChange={handleSearch} style={{ width: 200, marginBottom: 15 }} prefix={<SearchOutlined />} />
+      <Input
+        placeholder="Search Books"
+        onChange={handleSearch}
+        style={{ width: 200, marginBottom: 15 }}
+        prefix={<SearchOutlined />}
+      />
+
       <Button
         type="primary"
         icon={<PlusOutlined />}
@@ -113,7 +144,8 @@ function BookListView() {
         Create Book
       </Button>
       {showCreateBook && <CreateBookView />}
-      <Table dataSource={filteredBooks} columns={columns} />
+      <Table dataSource={books} columns={columns} />
+
     </div>
   );
 }

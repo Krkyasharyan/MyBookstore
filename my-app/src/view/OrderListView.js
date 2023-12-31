@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Space, Input, DatePicker, Collapse } from 'antd';
 import { CaretRightOutlined } from '@ant-design/icons';
 import moment from 'moment';
+import API_BASE_URL from '../config';
 
 const { RangePicker } = DatePicker;
 const { Search } = Input;
@@ -17,7 +18,7 @@ function OrderListView() {
   }, []);
 
   const fetchOrders = async () => {
-    const response = await fetch('http://localhost:8080/api/orders');
+    const response = await fetch(`${API_BASE_URL}/api/orders`);
     const data = await response.json();
     setOrders(data);
   }

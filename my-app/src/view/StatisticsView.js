@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DatePicker, Table, Button } from 'antd';
 import moment from 'moment';
+import API_BASE_URL from '../config';
 
 function StatisticsView() {
   const [startDate, setStartDate] = useState(moment().subtract(1, 'months'));
@@ -9,13 +10,13 @@ function StatisticsView() {
   const [userData, setUserData] = useState([]);
 
   const fetchBookData = async () => {
-    const response = await fetch(`http://localhost:8080/api/statistics/books?start=${startDate.format('YYYY-MM-DD')}&end=${endDate.format('YYYY-MM-DD')}`);
+    const response = await fetch(`${API_BASE_URL}/api/statistics/books?start=${startDate.format('YYYY-MM-DD')}&end=${endDate.format('YYYY-MM-DD')}`);
     const data = await response.json();
     setBookData(data);
   };
 
   const fetchUserData = async () => {
-    const response = await fetch(`http://localhost:8080/api/statistics/users?start=${startDate.format('YYYY-MM-DD')}&end=${endDate.format('YYYY-MM-DD')}`);
+    const response = await fetch(`${API_BASE_URL}/api/statistics/users?start=${startDate.format('YYYY-MM-DD')}&end=${endDate.format('YYYY-MM-DD')}`);
     const data = await response.json();
     setUserData(data);
   };

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import API_BASE_URL from './config';
 
 export const UserContext = createContext();
 
@@ -6,7 +7,7 @@ export function UserProvider({ children }) {
   const [username, setUsername] = useState('Guest');
 
   const refreshUsername = async () => {
-    const response = await fetch(`http://localhost:8080/api/auth/getUserInfo`, {credentials: 'include'});
+    const response = await fetch(`${API_BASE_URL}/api/auth/getUserInfo`, {credentials: 'include'});
     const data = await response.json();
     const fetchedUsername = data.username || 'Guest';
     setUsername(fetchedUsername);
